@@ -1,0 +1,8 @@
+requests~=2.25.1
+pandas~=1.2.4
+numpy~=1.20.1
+cachetools~=4.2.2
+apscheduler~=3.7.0
+beautifulsoup4~=4.9.3
+lxml
+python-telegram-bot

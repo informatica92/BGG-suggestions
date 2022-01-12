@@ -1,0 +1,2 @@
+class BggSuggestionException(BaseException):
+    pass
