@@ -2,7 +2,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 import pandas as pd
 import numpy as np
-from core.bgg_api_manager import load_hot_boardgames, load_user_collection
+from core.bgg_api_manager import load_hot_boardgames, load_user_collection, get_boardgame_features
 
 
 TOP_N = 5
@@ -22,6 +22,22 @@ class BggSuggestions(object):
         # get hot boardgames
         self.hot_boardgames_df = pd.DataFrame(load_hot_boardgames())
         self.filters = ["own", "want", "wanttoplay", "wanttobuy", "wishlist", "preordered"]
+
+    def suggest_from_boardgame(self, boardgame_id, boardgame_name, top_n=5, format_='dict'):
+        # get user's collection.
+        liked_boardgames_df = pd.DataFrame(
+            [
+                {'id': boardgame_id, 'name': boardgame_name, 'features': get_boardgame_features(boardgame_id)}
+            ]
+        )
+
+        # calculate the hotness ranking according to the user's liked board games
+        ranked_df = self._get_ranked(liked_boardgames_df)
+
+        # format result according to the TOP N and the desired format
+        result = BggSuggestions._get_top_n(ranked_df, n=top_n, format_=format_)
+
+        return result
 
     def suggest_from_user(self, username, top_n=5, format_='dict'):
         # get user's collection.

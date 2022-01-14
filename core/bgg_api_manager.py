@@ -9,6 +9,8 @@ from core.bgg_exceptions import BggSuggestionException
 HOT_BOARDGAME_URL = "https://www.boardgamegeek.com/xmlapi2/hot?type=boardgame"
 BOARDGAME_INFO_URL = "https://www.boardgamegeek.com/xmlapi2/thing?id={id}"
 USER_COLLECTION_URL = "https://www.boardgamegeek.com/xmlapi2/collection?username={username}"
+SEARCH_URL = "https://boardgamegeek.com/xmlapi2/search?type=boardgame&query={query}"  # expansions are included into 'boardgame' type
+
 ALLOWED_FILTERS = ["own", "prevowned", "fortrade", "want", "wanttoplay", "wanttobuy", "wishlist", "preordered"]
 
 
@@ -53,6 +55,21 @@ def get_boardgame_features(id_, additional_info=None):
             else:
                 addition_info_array.append(None)
         return features, *addition_info_array
+
+
+def search_boardgame(boardgame_name, raise_if_empty=True):
+    search_results_bs_content = get_bs_content_from_url(SEARCH_URL.format(query=boardgame_name))
+    items = search_results_bs_content.find_all("item")
+    results = [
+        {
+            'id': i.get("id"),
+            'name': i.find("name").get("value"),
+            'year': i.find("yearpublished").get("value")
+        } for i in items
+    ]
+    if raise_if_empty and len(results) == 0:
+        raise BggSuggestionException("Empty results, try another string")
+    return results
 
 
 def load_hot_boardgames():

@@ -1,6 +1,7 @@
 import logging
 import json
 from core.bgg_suggestions import BggSuggestions
+from core.bgg_api_manager import search_boardgame
 from core.bgg_exceptions import BggSuggestionException
 from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, Updater
 
@@ -61,9 +62,21 @@ def suggest_from_username(update, context):
 def suggest_from_boardgame(update, context):
     """Suggest boardgames to the username."""
     boardgame = update.message.text
-    update.message.reply_text("A list of suggestion according to this boardgame is coming...")
+    update.message.reply_text(f"⌛ A list of suggestion related to {boardgame} is coming...")
     logger.info(f"get suggestions for boardgame '{boardgame}'")
-    # TODO
+    try:
+        results = search_boardgame(boardgame)
+        result = results[0]
+        suggestions = bgg_suggestions.suggest_from_boardgame(result['id'], result['name'], format_="text")
+        for suggestion in suggestions:
+            update.message.reply_text(suggestion)
+    except BggSuggestionException as e:
+        update.message.reply_text(str(e))
+        return CHOOSING
+    except (BaseException, ValueError) as e:
+        update.message.reply_text("Generic error occurred")
+        raise e
+
     return ConversationHandler.END
 
 
@@ -82,9 +95,10 @@ def ask_for_username(update, context):
 
 def ask_for_boardgame_name(update, context):
     update.message.reply_text(
-        "NOT IMPLEMENTED YET."
+        "📝 Ok, tell me the name of the boardgame\n"
+        "EG: if you want to get suggestions related to 'Takenoko', just send it"
     )
-    return ConversationHandler.END
+    return CHOOSING
 
 
 def fallback_action(update, context):
