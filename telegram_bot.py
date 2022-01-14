@@ -19,7 +19,8 @@ HELP_MESSAGE = f"""Hi and welcome in this BGG games suggestion system.
 
 ❓ In a nutshell:
 1. you send us your BGG username
-2. we analyze your boardgames collection
+2. we analyze your boardgames collection 
+NB: only "own", "want to play", "want to buy"...
 3. then we do the same with the [hotness](https://boardgamegeek.com/hotness)
 4. we cross-check both the results
 5. we return the top 5 games that fit the most
@@ -41,7 +42,7 @@ def help_command(update, context):
 def suggest_from_username(update, context):
     """Suggest boardgames to the username."""
     username = update.message.text
-    update.message.reply_text("A list of suggestion according to your BGG collection is coming...")
+    update.message.reply_text(f"⌛ A list of suggestion according to {username}'s BGG collection is coming...")
     logger.info(f"get suggestions for user '{username}'")
     try:
         suggestions = bgg_suggestions.suggest_from_user(username=username, format_="text")
@@ -73,8 +74,8 @@ def error(update, context):
 
 def ask_for_username(update, context):
     update.message.reply_text(
-        "Just type your BGG username.\n"
-        "EG: if your username is 'test001', just send it here and wait for the results"
+        "📝 Ok, tell me your BGG username\n"
+        "EG: if your username is 'test001', just send it as it is"
     )
     return CHOOSING
 
