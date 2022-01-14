@@ -9,6 +9,7 @@ from core.bgg_exceptions import BggSuggestionException
 HOT_BOARDGAME_URL = "https://www.boardgamegeek.com/xmlapi2/hot?type=boardgame"
 BOARDGAME_INFO_URL = "https://www.boardgamegeek.com/xmlapi2/thing?id={id}"
 USER_COLLECTION_URL = "https://www.boardgamegeek.com/xmlapi2/collection?username={username}"
+ALLOWED_FILTERS = ["own", "prevowned", "fortrade", "want", "wanttoplay", "wanttobuy", "wishlist", "preordered"]
 
 
 # Enable logging
@@ -81,11 +82,15 @@ def load_hot_boardgames():
     return hot_boardgames
 
 
-def load_user_collection(username):
+def load_user_collection(username, filters=None):
     # Please note that for the first request, you only get a "got it, retry later" response
     # so if this is the case, retry again after 5s
-    # since the user collection is pretty static during the day, add the result into a TTL canche
+    # since the user collection is pretty static during the day, add the result into a TTL cache
     # of five elements and 12h of life
+    if filters is None:
+        filters = ["own", "prevowned", "fortrade", "want", "wanttoplay", "wanttobuy", "wishlist", "preordered"]
+    if set(filters) - set(ALLOWED_FILTERS):  # A - B
+        raise AttributeError(f"unexpected filter {list(set(filters) - set(ALLOWED_FILTERS))}")
     liked_boardgames = collection_ttl_cache.get(username, [])
 
     if len(liked_boardgames) == 0:
@@ -102,14 +107,19 @@ def load_user_collection(username):
         # for each boardgame in collection, get the same features we got above for the hottest
         logger.info(f"found {len(liked_items)} liked boardgames, processing...")
         for liked_item in liked_items:
-            liked_boardgames.append(
-                {
-                    "id": liked_item.get("objectid"),
-                    "name": liked_item.find("name").text,
-                    "features": get_boardgame_features(liked_item.get("objectid"))
-                }
-            )
-
+            status = liked_item.find('status')
+            # logger.info(status)
+            to_include = sum([int(status.get(f)) for f in filters])
+            if to_include > 0:
+                liked_boardgames.append(
+                    {
+                        "id": liked_item.get("objectid"),
+                        "name": liked_item.find("name").text,
+                        "features": get_boardgame_features(liked_item.get("objectid"))
+                    }
+                )
+            else:
+                logger.info(f"EXCLUDING {liked_item.find('name').text}")
         collection_ttl_cache[username] = liked_boardgames
 
     # if the number of liked boardgames is empty makes no sense to continue but this can be caused by:

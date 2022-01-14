@@ -21,10 +21,11 @@ class BggSuggestions(object):
     def __init__(self):
         # get hot boardgames
         self.hot_boardgames_df = pd.DataFrame(load_hot_boardgames())
+        self.filters = ["own", "want", "wanttoplay", "wanttobuy", "wishlist", "preordered"]
 
     def suggest_from_user(self, username, top_n=5, format_='dict'):
         # get user's collection.
-        liked_boardgames_df = pd.DataFrame(load_user_collection(username))
+        liked_boardgames_df = pd.DataFrame(load_user_collection(username, filters=self.filters))
 
         # calculate the hotness ranking according to the user's liked board games
         ranked_df = self._get_ranked(liked_boardgames_df)
