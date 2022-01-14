@@ -67,6 +67,7 @@ def suggest_from_boardgame(update, context):
     try:
         results = search_boardgame(boardgame)
         result = results[0]
+        # TODO: add possibility for the user to select which boardgame they want and not only the first one
         suggestions = bgg_suggestions.suggest_from_boardgame(result['id'], result['name'], format_="text")
         for suggestion in suggestions:
             update.message.reply_text(suggestion)
