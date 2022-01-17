@@ -36,27 +36,27 @@ What we have here, in fact, is a very simple recommendations system based on the
 #### The features
 On each board game on BGG just below the initial part, you can find a list of characteristics belonging to different fields: Type, Category, Mechanisms and Family.
 
-![features](.\resources\images\features_1.PNG "features")
+![features](resources/images/features_1.PNG "features")
 
 Theoretically,the more features two board games shares, the more similar they are and if we appreciated the first one, very likely we can be interested in the second as well.
 
 A graphic explanation of what we just said can be found in the image below:
 
-![common_features](.\resources\images\common_features.png "common features")
+![common_features](resources/images/common_features.png "common features")
 
 In this case, these 2 board games share the 33.33% of the features, or, in other words, an affinity equal to 0.33
 
 ### The results
 This being said, it's pretty easy to guess how our suggestion system works:
 1. We use the BGG APIs to get the hotness list
-![hotness](.\resources\images\hotness.PNG "hotness")
+![hotness](resources/images/hotness.PNG "hotness")
 2. We use the BGG APIs to get the user collection
-![collection](.\resources\images\collection.PNG "collection")
+![collection](resources/images/collection.PNG "collection")
 3. We calculate the affinity, as described above, between each hotness game and each user's collection game
-![cross_affinity](.\resources\images\cross_affinity.PNG "cross_affinity")
+![cross_affinity](resources/images/cross_affinity.PNG "cross_affinity")
 4. For each hotness game we identify the MAX affinity value obtained and boardgame(s) that generated that value
-![max_affinity](.\resources\images\max_affinity.PNG "max_affinity")
+![max_affinity](resources/images/max_affinity.PNG "max_affinity")
 5. We finally rank the hotness games by their max value of affinity, and we select the top 5
-![results](.\resources\images\results.PNG "results")
+![results](resources/images/results.PNG "results")
 
 
