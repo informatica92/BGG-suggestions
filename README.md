@@ -19,7 +19,8 @@ Finally, BGG also manages a hotness page where the most important games of the m
 
 ## How these suggestions works
 ### The telegram bot
-![telegram_bot](resources/images/telegrambot.png "telegram bot")
+<img src="resources/images/telegrambot.png" width="300">
+
 First, in order to allow many users to have access to this system, we decided to host it as a Telegram bot.
 
 A telegram bot is just a chat like any other where you can send commands in order to make the bot execute some actiosn.
