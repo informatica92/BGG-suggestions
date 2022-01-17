@@ -8,6 +8,7 @@ Here, this little repository comes to help everyone.
 Starting from everyone's BGG collection, it makes an analysis of each game we own and want to buy or play and cross-check these games with the BGG hotness.
 
 ## What is BGG?
+![bgg](resources/images/bgg.PNG "bgg")
 If you don't know what BGG is, it stands for "BoardGameGeek" and it is a global board games encyclopedia where you can find any board game (and not only, it also works with rpg, expansions...) checking its mechanisms, which kind of game it is, who created it, photos, reviews...
 
 On this site you can also manage a personal collection of games you own, want to play, want to buy.
@@ -18,6 +19,7 @@ Finally, BGG also manages a hotness page where the most important games of the m
 
 ## How these suggestions works
 ### The telegram bot
+![telegram_bot](resources/images/telegrambot.PNG "telegram bot")
 First, in order to allow many users to have access to this system, we decided to host it as a Telegram bot.
 
 A telegram bot is just a chat like any other where you can send commands in order to make the bot execute some actiosn.
