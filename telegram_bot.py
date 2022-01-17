@@ -1,3 +1,5 @@
+# TODO: replace web page preview with in-message image and description
+
 import logging
 import json
 from core.bgg_suggestions import BggSuggestions
@@ -38,7 +40,7 @@ def start_command(update: Update, context):
 
 def help_command(update: Update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(HELP_MESSAGE, parse_mode='Markdown')
+    update.message.reply_text(HELP_MESSAGE, parse_mode='Markdown', disable_web_page_preview=True)
 
 
 def suggest_from_username(update: Update, context):
@@ -105,7 +107,6 @@ def ask_for_boardgame_name(update: Update, context):
 
 
 def boardgame_selection_from_name(update: Update, context):
-    # TODO: add possibility for the user to select which boardgame they want and not only the first one
     boardgame = update.message.text
     update.message.reply_text(f"⌛ A list of suggestion related to '{str(boardgame).capitalize()}' is coming...")
     logger.info(f"get suggestions for boardgame '{boardgame}'")
