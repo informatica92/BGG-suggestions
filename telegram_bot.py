@@ -1,3 +1,5 @@
+# TODO: README
+
 import logging
 import json
 from core.bgg_suggestions import BggSuggestions
@@ -62,7 +64,7 @@ def suggest_from_username(update, context):
 def suggest_from_boardgame(update, context):
     """Suggest boardgames to the username."""
     boardgame = update.message.text
-    update.message.reply_text(f"⌛ A list of suggestion related to {boardgame} is coming...")
+    update.message.reply_text(f"⌛ A list of suggestion related to '{str(boardgame).capitalize()}' is coming...")
     logger.info(f"get suggestions for boardgame '{boardgame}'")
     try:
         results = search_boardgame(boardgame)
