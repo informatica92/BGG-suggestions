@@ -89,13 +89,13 @@ class BggSuggestions(object):
             return base.to_dict(orient='records')
         if format_ == 'dataframe':
             return base
-        if format_ == 'text':
+        if format_ == 'markdown':
             def text_format(el):
-                s = f"{el['name_hot']} ({el['affinity']:.2f}) \n" \
+                s = f"*{el['name_hot']}* ({el['affinity']:.2f}) \n" \
                     f"{el['url']} \n"
                 s += "because you also like:"
                 for o in el['because_you_also_like']:
-                    s += f"\n - '{o[0]}' with "
+                    s += f"\n - '_{o[0]}_' with "
                     for cf in o[1][0:3]:
                         s += f"{cf}, "
                     s += "..."

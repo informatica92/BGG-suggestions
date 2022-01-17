@@ -1,5 +1,3 @@
-# TODO: replace web page preview with in-message image and description
-
 import logging
 import json
 from core.bgg_suggestions import BggSuggestions
@@ -49,9 +47,9 @@ def suggest_from_username(update: Update, context):
     update.message.reply_text(f"⌛ A list of suggestion according to {username}'s BGG collection is coming...")
     logger.info(f"get suggestions for user '{username}'")
     try:
-        suggestions = bgg_suggestions.suggest_from_user(username=username, format_="text")
+        suggestions = bgg_suggestions.suggest_from_user(username=username, format_="markdown")
         for suggestion in suggestions:
-            update.message.reply_text(suggestion)
+            update.message.reply_text(suggestion, parse_mode='Markdown')
     except BggSuggestionException as e:
         update.message.reply_text(str(e))
         return CHOOSING
@@ -71,9 +69,9 @@ def suggest_from_boardgame(update: Update, context):
     query.answer()
     boardgame_id = int(query.data)
     try:
-        suggestions = bgg_suggestions.suggest_from_boardgame(boardgame_id, format_="text")
+        suggestions = bgg_suggestions.suggest_from_boardgame(boardgame_id, format_="markdown")
         for suggestion in suggestions:
-            query.message.reply_text(suggestion)
+            query.message.reply_text(suggestion, parse_mode='Markdown')
             # update.message.reply_text(suggestion)
     except BggSuggestionException as e:
         update.message.reply_text(str(e))
@@ -116,7 +114,7 @@ def boardgame_selection_from_name(update: Update, context):
             [InlineKeyboardButton(f"{r['name']} ({r['year']})", callback_data=r['id'])] for r in results
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text('Which one of these are you referring at?', reply_markup=reply_markup)
+        update.message.reply_text('🔀 Which one of these are you referring at?', reply_markup=reply_markup)
     except BggSuggestionException as e:
         update.message.reply_text(str(e))
         return CHOOSING
