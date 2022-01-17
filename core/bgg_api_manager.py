@@ -52,7 +52,7 @@ def get_boardgame_features(id_, additional_info=None):
         for a in additional_info:
             info = boardgame_info_response_bs_content.find(a)
             if info is not None:
-                addition_info_array.append(info.text)
+                addition_info_array.append(info.text or info.get("value"))
             else:
                 addition_info_array.append(None)
         return features, *addition_info_array
@@ -65,7 +65,7 @@ def search_boardgame(boardgame_name, raise_if_empty=True):
         {
             'id': i.get("id"),
             'name': i.find("name").get("value"),
-            'year': i.find("yearpublished").get("value")
+            'year': i.find("yearpublished").get("value") if i.find("yearpublished") else 'unknown'
         } for i in items
     ]
     if raise_if_empty and len(results) == 0:

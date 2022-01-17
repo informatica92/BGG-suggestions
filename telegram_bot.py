@@ -1,18 +1,17 @@
-# TODO: README
-
 import logging
 import json
 from core.bgg_suggestions import BggSuggestions
 from core.bgg_api_manager import search_boardgame
 from core.bgg_exceptions import BggSuggestionException
-from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, Updater
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, Updater, CallbackQueryHandler
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 TOKEN = json.load(open("resources/telegram_token.json"))['TOKEN']
-CHOOSING, TYPING_REPLY, TYPING_CHOICE = range(3)
+CHOOSING, TYPING_CHOICE = range(2)
 START_MESSAGE = "Hi! Start getting suggestions or use the /help command for further details"
 HOW_TO_USE_IT = """🧪In order to test it, just use the /username command and follow the instructions.
 🎴We also offer a single-boardgame-based version of the suggestions, use the /boardgame command to test it"""
@@ -32,17 +31,17 @@ NB: only "own", "want to play", "want to buy"...
 """
 
 
-def start_command(update, context):
+def start_command(update: Update, context):
     """Send a message when the command /start is issued."""
     update.message.reply_text(START_MESSAGE)
 
 
-def help_command(update, context):
+def help_command(update: Update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text(HELP_MESSAGE, parse_mode='Markdown')
 
 
-def suggest_from_username(update, context):
+def suggest_from_username(update: Update, context):
     """Suggest boardgames to the username."""
     username = update.message.text
     update.message.reply_text(f"⌛ A list of suggestion according to {username}'s BGG collection is coming...")
@@ -61,18 +60,19 @@ def suggest_from_username(update, context):
     return ConversationHandler.END
 
 
-def suggest_from_boardgame(update, context):
+def suggest_from_boardgame(update: Update, context):
     """Suggest boardgames to the username."""
-    boardgame = update.message.text
-    update.message.reply_text(f"⌛ A list of suggestion related to '{str(boardgame).capitalize()}' is coming...")
-    logger.info(f"get suggestions for boardgame '{boardgame}'")
+    query = update.callback_query
+
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    query.answer()
+    boardgame_id = int(query.data)
     try:
-        results = search_boardgame(boardgame)
-        result = results[0]
-        # TODO: add possibility for the user to select which boardgame they want and not only the first one
-        suggestions = bgg_suggestions.suggest_from_boardgame(result['id'], result['name'], format_="text")
+        suggestions = bgg_suggestions.suggest_from_boardgame(boardgame_id, format_="text")
         for suggestion in suggestions:
-            update.message.reply_text(suggestion)
+            query.message.reply_text(suggestion)
+            # update.message.reply_text(suggestion)
     except BggSuggestionException as e:
         update.message.reply_text(str(e))
         return CHOOSING
@@ -83,12 +83,12 @@ def suggest_from_boardgame(update, context):
     return ConversationHandler.END
 
 
-def error(update, context):
+def error(update: Update, context):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
-def ask_for_username(update, context):
+def ask_for_username(update: Update, context):
     update.message.reply_text(
         "📝 Ok, tell me your BGG username\n"
         "EG: if your username is 'test001', just send it as it is"
@@ -96,7 +96,7 @@ def ask_for_username(update, context):
     return CHOOSING
 
 
-def ask_for_boardgame_name(update, context):
+def ask_for_boardgame_name(update: Update, context):
     update.message.reply_text(
         "📝 Ok, tell me the name of the boardgame\n"
         "EG: if you want to get suggestions related to 'Takenoko', just send it"
@@ -104,7 +104,27 @@ def ask_for_boardgame_name(update, context):
     return CHOOSING
 
 
-def fallback_action(update, context):
+def boardgame_selection_from_name(update: Update, context):
+    # TODO: add possibility for the user to select which boardgame they want and not only the first one
+    boardgame = update.message.text
+    update.message.reply_text(f"⌛ A list of suggestion related to '{str(boardgame).capitalize()}' is coming...")
+    logger.info(f"get suggestions for boardgame '{boardgame}'")
+    try:
+        results = search_boardgame(boardgame)
+        keyboard = [
+            [InlineKeyboardButton(f"{r['name']} ({r['year']})", callback_data=r['id'])] for r in results
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text('Which one of these are you referring at?', reply_markup=reply_markup)
+    except BggSuggestionException as e:
+        update.message.reply_text(str(e))
+        return CHOOSING
+    except (BaseException, ValueError) as e:
+        update.message.reply_text("Generic error occurred")
+        raise e
+
+
+def fallback_action(update: Update, context):
     update.message.reply_text(HOW_TO_USE_IT)
 
 
@@ -131,8 +151,14 @@ def conversation():
 
     conv_boardgame_handler = ConversationHandler(
         entry_points=[CommandHandler('boardgame', ask_for_boardgame_name)],
-        states={CHOOSING: [MessageHandler(Filters.text, suggest_from_boardgame)]},
-        fallbacks=[]
+        states={
+            CHOOSING: [
+                MessageHandler(Filters.text, boardgame_selection_from_name),
+                CallbackQueryHandler(suggest_from_boardgame)
+            ]
+        },
+        fallbacks=[],
+        per_message=False
     )
 
     dp.add_handler(conv_username_handler)

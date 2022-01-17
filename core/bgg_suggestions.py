@@ -23,8 +23,8 @@ class BggSuggestions(object):
         self.hot_boardgames_df = pd.DataFrame(load_hot_boardgames())
         self.filters = ["own", "want", "wanttoplay", "wanttobuy", "wishlist", "preordered"]
 
-    def suggest_from_boardgame(self, boardgame_id, boardgame_name, top_n=5, format_='dict'):
-        # get user's collection.
+    def suggest_from_boardgame(self, boardgame_id, top_n=5, format_='dict'):
+        _, (boardgame_name) = get_boardgame_features(boardgame_id, additional_info=['name'])
         liked_boardgames_df = pd.DataFrame(
             [
                 {'id': boardgame_id, 'name': boardgame_name, 'features': get_boardgame_features(boardgame_id)}
