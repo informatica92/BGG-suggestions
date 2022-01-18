@@ -25,7 +25,7 @@ First, in order to allow many users to have access to this system, we decided to
 
 A telegram bot is just a chat like any other where you can send commands in order to make the bot execute some actiosn.
 
-You can find the bot looking for '@notifyme_regexmatch_bot'
+You can find the bot looking for '@notifyme_regexmatch_bot' or clicking [here](https://t.me/notifyme_regexmatch_bot)
 
 After the initial /start command, you can take a look at the /help command results to see how it works
 
