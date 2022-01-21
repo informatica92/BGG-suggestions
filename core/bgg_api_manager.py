@@ -133,7 +133,8 @@ def load_user_collection(username, filters=None):
                     {
                         "id": liked_item.get("objectid"),
                         "name": liked_item.find("name").text,
-                        "features": get_boardgame_features(liked_item.get("objectid"))
+                        "features": get_boardgame_features(liked_item.get("objectid")),
+                        "numplays": int(liked_item.find("numplays").text)
                     }
                 )
             else:

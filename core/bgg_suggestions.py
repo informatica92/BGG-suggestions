@@ -28,7 +28,12 @@ class BggSuggestions(object):
         _, (boardgame_name) = get_boardgame_features(boardgame_id, additional_info=['name'])
         liked_boardgames_df = pd.DataFrame(
             [
-                {'id': boardgame_id, 'name': boardgame_name, 'features': get_boardgame_features(boardgame_id)}
+                {
+                    'id': boardgame_id,
+                    'name': boardgame_name,
+                    'features': get_boardgame_features(boardgame_id),
+                    'numplays': 0
+                }
             ]
         )
 
@@ -61,25 +66,7 @@ class BggSuggestions(object):
         # the corresponding affinity and common features that contributed to obtain that affinity
         total_df[['affinity', 'comm_features']] = total_df.apply(self.calculate_affinity, result_type='expand', axis=1)
 
-        total_df['because_you_also_like'] = total_df.apply(lambda x: (x['name_liked'], x['comm_features']), axis=1)
-
-        # now add for each row the value of the MAX affinity obtained for each hot_boardgame
-        total_df['max_affinity'] = total_df.groupby('name_hot').affinity.transform(np.max)
-
-        # this is the final part where we calculate and shoe the suggestion in affinity descending order:
-        # - filter only the liked_boardgames that contributed to obtain the hot_boardgame's max affinity
-        # - filter out the hot_boardgames the user already liked (affinity would be 1 => useless suggestion)
-        liked_names = liked_boardgames_df.name.to_list()
-        ranked_df = total_df.query(f"affinity == max_affinity and name_hot not in {liked_names}").reset_index(drop=True)
-        # - truncate the description at max 350 characters
-        ranked_df['description'] = ranked_df['description'].str.slice(0, 350) + '...'
-        # - convert the name into a clickable link
-        ranked_df['url'] = ranked_df.apply(lambda x: f"https://boardgamegeek.com/boardgame/{x['id_hot']}", axis=1)
-        # - group by and order by affinity
-        group_by_list = ['name_hot', 'url', 'affinity', 'description']
-        ranked_df = ranked_df.groupby(group_by_list)[['because_you_also_like']]. \
-            agg({'because_you_also_like': lambda x: list(x)})
-        ranked_df = ranked_df.sort_values('affinity', ascending=False)
+        ranked_df = BggSuggestions.affinity_handler(total_df, mode='sum_weighted')
 
         return ranked_df
 
@@ -92,8 +79,8 @@ class BggSuggestions(object):
             return base
         if format_ == 'markdown':
             def text_format(el):
-                s = f"*{el['name_hot']}* ({el['affinity']:.2f}) \n" \
-                    f"{el['url']} \n"
+                s = f"*{el['name_hot']}* ({el['total_affinity']:.2f}) \n" \
+                    f"https://boardgamegeek.com/boardgame/{el['id_hot']} \n"
                 s += "because you also like:"
                 for o in el['because_you_also_like']:
                     s += f"\n - '_{o[0]}_' with "
@@ -123,3 +110,42 @@ class BggSuggestions(object):
         else:
             affinity = 0
         return affinity, common_features
+
+    @staticmethod
+    def affinity_handler(total_df, mode=None):
+        if mode not in ['max', 'sum_weighted']:
+            raise AttributeError(f"mode '{mode}' not in allowed ones: {['max', 'sum_weighted']}")
+
+        if mode == 'max':
+            total_df['because_you_also_like'] = total_df.apply(
+                lambda x: (x['name_liked'], x['comm_features'], x['affinity']),
+                axis=1
+            )
+
+            ranked_df = total_df.query(f"name_hot not in {list(total_df.name_liked.unique())}") \
+                .groupby(["id_hot", "name_hot", "thumbnail", "description"]) \
+                .agg(
+                    {
+                        'affinity': max,
+                        'because_you_also_like': lambda x: sorted(list(x), key=lambda x: x[2], reverse=True)[:1]
+                    }, result_type='expand') \
+                .reset_index() \
+                .rename({'affinity': 'total_affinity'}, axis=1)
+        elif mode == 'sum_weighted':
+            total_df['weighted_affinity'] = total_df['affinity'] * (total_df['numplays'] + 0.5)
+            total_df['because_you_also_like'] = total_df.apply(
+                lambda x: (x['name_liked'], x['comm_features'], x['weighted_affinity']),
+                axis=1
+            )
+
+            ranked_df = total_df.query(f"name_hot not in {list(total_df.name_liked.unique())}") \
+                .groupby(["id_hot", "name_hot", "thumbnail", "description"]) \
+                .agg(
+                    {
+                        'weighted_affinity': sum,
+                        'because_you_also_like': lambda x: sorted(list(x), key=lambda x: x[2], reverse=True)[:3]
+                    }, result_type='expand') \
+                .reset_index() \
+                .rename({'weighted_affinity': 'total_affinity'}, axis=1) \
+
+        return ranked_df.sort_values('total_affinity', ascending=False, ignore_index=True)
