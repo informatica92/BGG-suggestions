@@ -73,8 +73,8 @@ class BggSuggestions(object):
         if format_ == 'markdown':
             def text_format(el):
                 s = f"*{el['name_hot']}* ({el['total_affinity']:.2f}) \n" \
-                    f"https://boardgamegeek.com/boardgame/{el['id_hot']} \n"
-                s += "🔗 because you also like:"
+                    f"🔗 https://boardgamegeek.com/boardgame/{el['id_hot']} \n"
+                s += "❤ because you also like:"
                 for o in el['because_you_also_like']:
                     s += f"\n - '_{o[0]}_' ({float(o[2]):.2f}) with "
                     for cf in o[1][0:3]:
