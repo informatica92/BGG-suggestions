@@ -100,6 +100,15 @@ def load_hot_boardgames():
     return hot_boardgames
 
 
+def item_to_dict(id_, name, features, numplays):
+    return {
+        "id": id_,
+        "name": name,
+        "features": features,
+        "numplays": numplays
+    }
+
+
 def load_user_collection(username, filters=None):
     # Please note that for the first request, you only get a "got it, retry later" response
     # so if this is the case, retry again after 5s
@@ -130,13 +139,14 @@ def load_user_collection(username, filters=None):
             to_include = sum([int(status.get(f)) for f in filters])
             if to_include > 0:
                 liked_boardgames.append(
-                    {
-                        "id": liked_item.get("objectid"),
-                        "name": liked_item.find("name").text,
-                        "features": get_boardgame_features(liked_item.get("objectid")),
-                        "numplays": int(liked_item.find("numplays").text)
-                    }
+                    item_to_dict(
+                        id_=liked_item.get("objectid"),
+                        name=liked_item.find("name").text,
+                        features=get_boardgame_features(liked_item.get("objectid")),
+                        numplays=int(liked_item.find("numplays").text)
+                    )
                 )
+
             else:
                 logger.info(f"EXCLUDING {liked_item.find('name').text}")
         collection_ttl_cache[username] = liked_boardgames
