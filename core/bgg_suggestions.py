@@ -15,6 +15,7 @@ scheduler = BackgroundScheduler()
 scheduler.start()
 
 scheduler.add_job(load_hot_boardgames, 'interval', minutes=60)
+logging.getLogger('apscheduler.executors.default').setLevel(logging.WARNING)
 
 
 class BggSuggestions(object):
