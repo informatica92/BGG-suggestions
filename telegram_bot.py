@@ -17,7 +17,7 @@ HOW_TO_USE_IT = """🧪In order to test it, just use the /username command and f
 🎴We also offer a single-boardgame-based version of the suggestions, use the /boardgame command to test it"""
 HELP_MESSAGE = f"""Hi and welcome in this BGG games suggestion system.
 
-🧠The idea behind these suggestions is explained [here](https://github.com/informatica92/BGG-suggestions)
+🧠The idea behind these suggestions is explained in [this](https://github.com/informatica92/BGG-suggestions) GitHub repo
 
 ❓ In a nutshell:
 1. you send us your BGG username
