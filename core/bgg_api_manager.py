@@ -148,7 +148,8 @@ def load_user_collection(username, filters=None):
                 )
 
             else:
-                logger.info(f"EXCLUDING {liked_item.find('name').text}")
+                pass
+                # logger.info(f"EXCLUDING {liked_item.find('name').text}")
         collection_ttl_cache[username] = liked_boardgames
 
     # if the number of liked boardgames is empty makes no sense to continue but this can be caused by:
