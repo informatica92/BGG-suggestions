@@ -24,10 +24,16 @@ collection_ttl_cache = cachetools.TTLCache(ttl=60*60*1, maxsize=10)  # 1 hour
 
 
 # simple function for requests execution and BeautifulSoup content conversion
-def get_bs_content_from_url(url):
-    url_response = requests.get(url)
-    url_bs_content = bs(url_response.content, "lxml")
-    return url_bs_content
+def get_bs_content_from_url(url, raise_exception=True):
+    try:
+        url_response = requests.get(url)
+        url_bs_content = bs(url_response.content, "lxml")
+        return url_bs_content
+    except requests.exceptions.RequestException as e:
+        logging.exception("request failed")
+        if raise_exception:
+            raise BggSuggestionException("😞💔 We have some issues trying to retrieve BGG's information:\n"
+                                         "try again later or contact the administrator")
 
 
 # simple function that, given an id, it returns its features (boardgamecategory, boardgamemechanic...)
@@ -78,7 +84,9 @@ def load_hot_boardgames():
 
     if len(hot_boardgames) == 0:
         logger.info("updating hot_boardgames cache")
-        hot_boardgames_bs_content = get_bs_content_from_url(HOT_BOARDGAME_URL)
+        hot_boardgames_bs_content = get_bs_content_from_url(HOT_BOARDGAME_URL, raise_exception=False)
+        if hot_boardgames_bs_content is None:
+            return []
         items = hot_boardgames_bs_content.find_all("item")
         for item in items:
             features, description, thumbnail = get_boardgame_features(
@@ -98,6 +106,14 @@ def load_hot_boardgames():
 
         hotness_ttl_cache['hot_boardgames'] = hot_boardgames
     return hot_boardgames
+
+
+def check_hotness():
+    hotness = load_hot_boardgames()
+    if len(hotness) == 0:
+        logger.error("HOTNESS LIST IS EMPTY")
+        raise BggSuggestionException("😞💔 We had issues trying to get the hotness list from BGG:\n"
+                                     "try again later or contact the administrator")
 
 
 def item_to_dict(id_, name, features, numplays):

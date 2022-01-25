@@ -1,7 +1,8 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 import logging
 import pandas as pd
-from core.bgg_api_manager import load_hot_boardgames, load_user_collection, get_boardgame_features, item_to_dict
+from core.bgg_api_manager import load_hot_boardgames, load_user_collection, get_boardgame_features, item_to_dict, \
+    check_hotness
 
 
 TOP_N = 5
@@ -50,6 +51,9 @@ class BggSuggestions(object):
         return result
 
     def _get_ranked(self, liked_boardgames_df: pd.DataFrame, mode='sum_weighted'):
+        # check if hotness list is ok
+        check_hotness()
+
         # merge the two DFs hot_boardgames_df and liked_boardgames_df in a cross join way => each hot bg with every
         # liked bg in this way we are ready to calculate the affinity for each couple of boardgames
         total_df = self.hot_boardgames_df.merge(liked_boardgames_df, how='cross', suffixes=('_hot', '_liked'))
