@@ -32,8 +32,8 @@ def get_bs_content_from_url(url, raise_exception=True):
     except requests.exceptions.RequestException as e:
         logging.exception("request failed")
         if raise_exception:
-            raise BggSuggestionException("😞💔 We have some issues trying to retrieve BGG's information:\n"
-                                         "try again later or contact the administrator")
+            raise BggSuggestionException("😞💔 We have some issues trying to retrieve BGG's information."
+                                         "Try again later or contact the administrator")
 
 
 # simple function that, given an id, it returns its features (boardgamecategory, boardgamemechanic...)
@@ -112,8 +112,8 @@ def check_hotness():
     hotness = load_hot_boardgames()
     if len(hotness) == 0:
         logger.error("HOTNESS LIST IS EMPTY")
-        raise BggSuggestionException("😞💔 We had issues trying to get the hotness list from BGG:\n"
-                                     "try again later or contact the administrator")
+        raise BggSuggestionException("😞💔 We had issues trying to get the hotness list from BGG. "
+                                     "Try again later or contact the administrator")
 
 
 def item_to_dict(id_, name, features, numplays):
