@@ -5,7 +5,7 @@ class EnglishStrings(object):
                     "to test it"""
     HELP_MESSAGE = f"Hi and welcome in this BGG games suggestion system.\n" \
                    f"\n" \
-                   f"🧠The idea behind these suggestions is wee explained on " \
+                   f"🧠The idea behind these suggestions is well explained on " \
                    f"[GitHub](https://github.com/informatica92/BGG-suggestions)\n" \
                    f"\n" \
                    f"❓ In a nutshell:\n" \
