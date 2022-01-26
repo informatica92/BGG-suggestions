@@ -84,7 +84,7 @@ class BggSuggestions(object):
                     for cf in o[1][0:3]:
                         s += f"{cf}, "
                     s += "..."
-                s += "..."
+                s += "\n..."
                 return s
             return [text_format(el) for el in BggSuggestions._get_top_n(suggestions, n=n, format_='dict')]
         else:

@@ -5,6 +5,7 @@ from core.bgg_api_manager import search_boardgame
 from core.bgg_exceptions import BggSuggestionException
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, Updater, CallbackQueryHandler
+from telegram_resources.strings import EnglishStrings as language
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -12,39 +13,22 @@ logger = logging.getLogger(__name__)
 
 TOKEN = json.load(open("resources/telegram_token.json"))['TOKEN']
 CHOOSING, TYPING_CHOICE = range(2)
-START_MESSAGE = "Hi! Start getting suggestions or use the /help command for further details"
-HOW_TO_USE_IT = """🧪In order to test it, just use the /username command and follow the instructions.
-🎴We also offer a single-boardgame-based version of the suggestions, use the /boardgame command to test it"""
-HELP_MESSAGE = f"""Hi and welcome in this BGG games suggestion system.
-
-🧠The idea behind these suggestions is explained in [this](https://github.com/informatica92/BGG-suggestions) GitHub repo
-
-❓ In a nutshell:
-1. you send us your BGG username
-2. we analyze your boardgames collection 
-NB: only "own", "want to play", "want to buy"...
-3. then we do the same with the [hotness](https://boardgamegeek.com/hotness)
-4. we cross-check both the results
-5. we return the top 5 games that fit the most
-
-{HOW_TO_USE_IT}
-"""
 
 
 def start_command(update: Update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text(START_MESSAGE)
+    update.message.reply_text(language.START_MESSAGE)
 
 
 def help_command(update: Update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(HELP_MESSAGE, parse_mode='Markdown', disable_web_page_preview=True)
+    update.message.reply_text(language.HELP_MESSAGE, parse_mode='Markdown', disable_web_page_preview=True)
 
 
 def suggest_from_username(update: Update, context):
     """Suggest boardgames to the username."""
     username = update.message.text
-    update.message.reply_text(f"⌛ A list of suggestion according to {username}'s BGG collection is coming...")
+    update.message.reply_text(language.INTRO_MESSAGE.format(thing=f"{username}'s BGG collection"))
     logger.info(f"get suggestions for user '{username}'")
     try:
         suggestions = bgg_suggestions.suggest_from_user(username=username, format_="markdown")
@@ -89,24 +73,18 @@ def error(update: Update, context):
 
 
 def ask_for_username(update: Update, context):
-    update.message.reply_text(
-        "📝 Ok, tell me your BGG username\n"
-        "EG: if your username is 'test001', just send it as it is"
-    )
+    update.message.reply_text(language.ASK_FOR_USERNAME)
     return CHOOSING
 
 
 def ask_for_boardgame_name(update: Update, context):
-    update.message.reply_text(
-        "📝 Ok, tell me the name of the boardgame\n"
-        "EG: if you want to get suggestions related to 'Takenoko', just send it"
-    )
+    update.message.reply_text(language.ASK_FOR_BOARDGAME_NAME)
     return CHOOSING
 
 
 def boardgame_selection_from_name(update: Update, context):
     boardgame = update.message.text
-    update.message.reply_text(f"⌛ A list of suggestion related to '{str(boardgame).capitalize()}' is coming...")
+    update.message.reply_text(language.INTRO_MESSAGE.format(thing=str(boardgame).capitalize()))
     logger.info(f"get suggestions for boardgame '{boardgame}'")
     try:
         results = search_boardgame(boardgame)
@@ -114,7 +92,7 @@ def boardgame_selection_from_name(update: Update, context):
             [InlineKeyboardButton(f"{r['name']} ({r['year']})", callback_data=r['id'])] for r in results
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text('🔀 Which one of these are you referring at?', reply_markup=reply_markup)
+        update.message.reply_text(language.OPTION, reply_markup=reply_markup)
     except BggSuggestionException as e:
         update.message.reply_text(str(e))
         return CHOOSING
@@ -124,7 +102,7 @@ def boardgame_selection_from_name(update: Update, context):
 
 
 def fallback_action(update: Update, context):
-    update.message.reply_text(HOW_TO_USE_IT)
+    update.message.reply_text(language.HOW_TO_USE_IT)
 
 
 def conversation():
