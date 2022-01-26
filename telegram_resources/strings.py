@@ -1,12 +1,4 @@
-REQUIRED_CONSTANTS = ['START_MESSAGE', 'HOW_TO_USE_IT', 'HELP_MESSAGE']
-
-
-class StringLanguage(object):
-    def __init__(self):
-        pass
-
-
-class EnglishStrings(StringLanguage):
+class EnglishStrings(object):
     START_MESSAGE = "Hi! Start getting suggestions or use the /help command for further details"
     HOW_TO_USE_IT = "🧪In order to test it, just use the /username command and follow the instructions.\n" \
                     "🎴We also offer a single-boardgame-based version of the suggestions, use the /boardgame command " \
@@ -31,6 +23,3 @@ class EnglishStrings(StringLanguage):
                              "EG: if you want to get suggestions related to 'Takenoko', just send it"
     INTRO_MESSAGE = "⌛ A list of suggestion related to {thing} is coming..."
     OPTION = '🔀 Which one of these are you referring at?'
-
-    def __init__(self):
-        super(EnglishStrings, self).__init__()
