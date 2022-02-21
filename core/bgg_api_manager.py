@@ -80,6 +80,7 @@ def search_boardgame(boardgame_name, raise_if_empty=True):
 
 
 def load_hot_boardgames():
+    # TODO: avoid to update the hotness list if the new one is empty and the old one is not
     hot_boardgames = hotness_ttl_cache.get('hot_boardgames', [])
 
     if len(hot_boardgames) == 0:

@@ -1,3 +1,5 @@
+# ADD collection analysis: preferred mechanic, most played games...
+
 import logging
 import json
 from core.bgg_suggestions import BggSuggestions
